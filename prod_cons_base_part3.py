@@ -50,9 +50,9 @@ class Buffer:
     def consume(self, id_cons):
         with self.lock:
             while self.nb_prod.value == 0 or self.used.value != 0:
-                self.nb_process_wating[1] += 1
-                self.prod_cons[1].wait()
-                self.nb_process_wating[1] -= 1
+                self.nb_process_wating[2] += 1
+                self.prod_cons[2].wait()
+                self.nb_process_wating[2] -= 1
             self.used.value = 1
             self.nb_prod.value -=1
             position = self.ptr_cons.value
