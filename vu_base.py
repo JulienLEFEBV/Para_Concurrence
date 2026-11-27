@@ -4,17 +4,29 @@ import sys
 import os
 import time
 import random
-from multiprocessing import Process
+from multiprocessing import Process, Lock, Condition, Value, Array
 
 class Road:
     def __init__(self):
-        pass
+        self.lock = Lock()
+        self.road = Condition(self.lock)
+        self.cur_dir = Value('i',-1,lock=False)
+        self.nb_used = Value('i',0,lock=False)
         
     def enter_road(self, direction):
-        pass
-
+        with self.lock:
+            while self.cur_dir.value != direction and self.cur_dir.value != -1:
+                self.road.wait()
+                self.road.notify()
+            self.cur_dir.value = direction
+            self.nb_used.value += 1
+        
     def exit_road(self):
-        pass
+        with self.lock:
+            self.nb_used.value -= 1
+            if self.nb_used.value == 0 :
+                self.cur_dir.value = -1
+                self.road.notify()
 
 def drive(road_type, direction, identifier):
     print("Vehicule %d, coming from %d goes through the %s" % (identifier, direction, road_type))
